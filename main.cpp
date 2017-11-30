@@ -6,7 +6,8 @@ volatile int mysliwi;
 volatile int kucharze;
 volatile int zwierzyna;
 volatile int pozywienie;
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex2 = PTHREAD_MUTEX_INITIALIZER;
 
 void* polowanie(void* arg)
 {
@@ -14,13 +15,10 @@ void* polowanie(void* arg)
     int obr  = rand()%6;
     if (atak > obr) zwierzyna++;
 
-    if (pozywienie > 0)
-    {
-        pthread_mutex_lock(&mutex);
-        pozywienie--;
-        pthread_mutex_unlock(&mutex);
-    }
-    else mysliwi--;
+    pthread_mutex_lock(&mutex1);
+    if (pozywienie > 0) pozywienie--;
+    else 				mysliwi--;
+    pthread_mutex_unlock(&mutex1);
 
     semafor--;
 	return 0;
@@ -28,21 +26,18 @@ void* polowanie(void* arg)
 
 void* pieczenie(void* arg)
 {
+    pthread_mutex_lock(&mutex2);
     if (zwierzyna > 0)
     {
-        pthread_mutex_lock(&mutex);
         zwierzyna--;
-        pthread_mutex_unlock(&mutex);
         pozywienie += rand()%6 + 1;
     }
+    pthread_mutex_unlock(&mutex2);
 
-    if (pozywienie > 0)
-    {
-        pthread_mutex_lock(&mutex);
-        pozywienie--;
-        pthread_mutex_unlock(&mutex);
-    }
-    else kucharze--;
+    pthread_mutex_lock(&mutex1);
+    if (pozywienie > 0) pozywienie--;
+    else				kucharze--;
+    pthread_mutex_unlock(&mutex1);
 
     semafor--;
 	return 0;
